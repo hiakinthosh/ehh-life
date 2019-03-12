@@ -19,17 +19,6 @@ public:
     bool status = false;
 };
 
-/*
-SDL_Rect cell::createRect(int xs, int ys, int width, int height) {
-    SDL_Rect rectangular;
-    rectangular.x = xs;
-    rectangular.y = ys;
-    rectangular.w = width;
-    rectangular.h = height;
-    return rectangular;
-}
-*/
-
 SDL_Rect createRect(int xs, int ys, int width, int height) {
     SDL_Rect rectangular;
     rectangular.x = xs;
@@ -69,16 +58,7 @@ int main(int argc, char* args[]) {
 
             int c = 10;
             int d = 8;
-
-            /*
-            cell testin;
-            testin.core.h = 200;
-            testin.core.w = 200;
-            testin.core.x = 200;
-            testin.core.y = 200;
-            testin.status = true;
-            */
-
+           
             while (!quit) {
                 SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255);
                 SDL_RenderClear(renderer); // fill with color whole window
@@ -93,7 +73,6 @@ int main(int argc, char* args[]) {
 
                 // drawing that lonely rect
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                //SDL_RenderFillRect(renderer, &rects[c][d]);
                 SDL_RenderFillRect(renderer, &rects[c][d].core);
 
                 SDL_RenderPresent(renderer); // apply to the display
