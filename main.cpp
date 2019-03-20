@@ -10,6 +10,9 @@ Trynna to do something like
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
+// to delete
+const size_t ARRAY_D = 16;
+
 
 class cell {
 public:
@@ -28,19 +31,14 @@ SDL_Rect createRect(const int xs, const int ys, const int width, const int heigh
     return rectangular;
 }
 
-// to delete
-const unsigned short ARRAY_D = 16;
 
-
-unsigned short countNeighbours(cell rects[], const int x, const int y) { // , cell &rects[][16]
+unsigned short countNeighbors(cell rects[], const int x, const int y) { // , cell &rects[][16]
     unsigned short amount = 0;
     //printf("start\n");
 
     for (short i = -1; i < 2; i++) {
         for (short j = -1; j < 2; j++) {
             if (!(i == 0 && j == 0)) {
-                //printf("pos: [%d, %d]\n", x - i, y - j);
-
                 if (rects[ARRAY_D*(x+i) + (y+j)].alive) amount++;
             }
         }
@@ -71,28 +69,28 @@ int main(int argc, char* args[]) {
             SDL_Event event;
             SDL_Renderer* renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED); //renderer used to color rects
 
-            cell rects[ARRAY_D * ARRAY_D]; // hardcoded; to change
+            cell rects[ARRAY_D * ARRAY_D];
 
 
-
-                int c = 4, d = 5;
-                int e = 3, f = 6;
-                int g = 3, h = 5;
-                rects[ARRAY_D*c + d].alive = true;
-                rects[ARRAY_D*e + f].alive = true;
-                rects[ARRAY_D*g + h].alive = true;
-
-                printf("neighbours of [%d, %d] = %d\n", c, d, countNeighbours(rects, c, d));
-
+            /* testing amount of neighbors */
+            int c = 4, d = 5;
+            int e = 3, f = 6;
+            int g = 3, h = 5;
+            rects[ARRAY_D*c + d].alive = true;
+            rects[ARRAY_D*e + f].alive = true;
+            rects[ARRAY_D*g + h].alive = true;
+            printf("neighbors of [%d, %d] = %d\n", c, d, countNeighbors(rects, c, d));
 
 
+            /* main loop */
             while (!quit) {
                 SDL_SetRenderDrawColor(renderer, 51, 102, 153, 255); // blue
                 SDL_RenderClear(renderer); // fill with color whole window
 
+                // wrong place for:
                 //SDL_SetRenderDrawColor(renderer, 255, 102, 0, 255); // orange
-                for (int i = 0; i < ARRAY_D; i++) {
-                    for (int j = 0; j < ARRAY_D; j++) {
+                for (size_t i = 0; i < ARRAY_D; i++) {
+                    for (size_t j = 0; j < ARRAY_D; j++) {
 
                         SDL_SetRenderDrawColor(renderer, 255, 102, 0, 255); // orange
 
@@ -109,50 +107,96 @@ int main(int argc, char* args[]) {
                 }
 
 
-
-                // dont know if i could comment the line below,
-                // because no events means no coloring but lets try it out
-
-                // highlighting the hovered rect
+                /* hovered rectangular highlighting */
                 int k, l;
                 SDL_GetMouseState(&k, &l);
-                SDL_SetRenderDrawColor(renderer, 255, 122, 40, 255); // mild orange (?)
+
+                if (rects[ARRAY_D * (k/41) + (l/41)].alive)
+                    SDL_SetRenderDrawColor(renderer, 63, 128, 193, 255); // brighter blue
+                else //if (!rects[ARRAY_D * (k/41) + (l/41)].alive)
+                    SDL_SetRenderDrawColor(renderer, 255, 122, 40, 255); // brighter orange
+
                 SDL_RenderFillRect(renderer, &rects[ARRAY_D * (k/41) + (l/41)].core);
-
-
                 SDL_RenderPresent(renderer); // applying everything to the display
 
+
+                /* event handling */
                 while (SDL_PollEvent(&event)) {
-                    if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) quit = true;
+                    //if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) quit = true; // SDLK_ESCAPE bugged?
+                    if (event.type == SDL_QUIT) quit = true;
+
+                    /* cell enlivening */
                     else if (event.type == SDL_MOUSEBUTTONDOWN) {
                         int x, y;
                         SDL_GetMouseState(&x, &y);
-                        printf("mouse position: [%d, %d] | rect coord: [%d, %d]\n", x, y, x/41, y/41);
-                        rects[ARRAY_D * (x/41) + (y/41)].alive = !rects[ARRAY_D * (x/41) + (y/41)].alive; // !rects[x/40][y/40].status
+                        // informing
+                        printf("mouse position: [%3d, %3d] | rect coord: [%2d, %2d] | neighbors: %d\n", x, y, x/41, y/41, countNeighbors(rects, x/41, y/41));
+                        rects[ARRAY_D * (x/41) + (y/41)].alive = !rects[ARRAY_D * (x/41) + (y/41)].alive;
+                        // unsigned short t =
                     }
 
-                    /* useless controlling using arrows
+                    /* starting the LIFE! */
                     else if (event.type == SDL_KEYDOWN) {
-                        switch(event.key.keysym.sym) {
-                            case SDLK_ESCAPE: quit = true; break;
-                            case SDLK_UP:    d--; break;
-                            case SDLK_DOWN:  d++; break;
-                            case SDLK_RIGHT: c++; break;
-                            case SDLK_LEFT:  c--; break;
-                            //default: break;
-                        }
-                    //printf("position: [%d, %d]\n", c, d);
-                    }
-                    */
-                }
-            }
-        }
-    }
+                        if (event.key.keysym.sym == SDLK_SPACE) {// to delete probably
+                            for (size_t i = 0; i < ARRAY_D; i++) {
+                                for (size_t j = 0; j < ARRAY_D; j++) {
+                                    switch(countNeighbors(rects, i, j)) {
+                                        case 1:
+                                        case 2: rects[ARRAY_D*i + j].alive = false; break;
+                                        case 3: rects[ARRAY_D*i + j].alive = true; break;
+                                        /*
+                                        case 4:
+                                        case 5:
+                                        case 6:
+                                        case 7:
+                                        case 8: rects[ARRAY_D*i + j].alive = false; break;
+                                        */
+                                        default: rects[ARRAY_D*i + j].alive = false; break;
+
+                                        /*
+                                        okay, now i know where the issue is;
+                                        when i initiated the one dimension array, there are
+                                        neighbors even on the other sides of window due to
+                                        the facts that this array is like a train:
+
+                                        0 0 0 1
+                                        1 0 0 0
+
+                                        1 from the first row and 1 from the second are neighbor
+                                        to each other, so we have supplied enough neighbor amount
+                                        to enliven the cell
+
+                                        one of the solution could be limitation of the columns
+                                        to prevent the cells' side-by-side counting
+                                        [don't know howdy yet]
+
+                                        another solution could be just deliver array as
+                                        a two-dimensional instead of one
+                                        it would be prevent problem showed above
+                                        but it calls to life other two or more problems
+                                        : passing two-dimensional array of objects to function
+                                        : slowing down the app
+                                        : issue of extension the map (in game of life there is assumption
+                                                                      the map is unlimited and like a sandbox)
+
+                                        don't know what to do...
+                                        */
+
+
+                                    } /* END OF switch */
+                                    //if (countNeighbors(rects, i, j) == 2 || countNeighbors(rects, i, j) == 3)
+                                      //  rects[ARRAY_D*i + j].alive = true;
+                                } /* END OF inside for loop */
+                            } /* END OF outside for loop */
+                        } /* END OF space pressed condition */
+                    } /* END OF key pressed down */
+                } /* END OF event loop */
+            } /* END OF main loop (while) */
+        } /* END OF else condition depends on existence of window */
+    } /* END OF condition that everything is initiated properly */
 
     SDL_DestroyWindow(window);
     SDL_Quit();
 
     return 0;
 }
-
-// httmp <3
