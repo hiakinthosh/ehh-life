@@ -4,20 +4,17 @@ Trynna to do something like
     *Conway's Game of Life*
     https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 
-
 */
 
 #include <SDL2/SDL.h>
 #include <stdio.h>
 
-// to delete
-const size_t ARRAY_D = 16;
-
+const size_t ARRAY_D = 16; // unapropriate declaration
 
 class cell {
 public:
     SDL_Rect core;
-    //cell()
+    //cell() // I don't know how to use constructors and destructors :(  yet...
     //SDL_Rect createRect(int xs, int ys, int width, int height);
     bool alive = false;
 };
@@ -32,18 +29,21 @@ SDL_Rect createRect(const int xs, const int ys, const int width, const int heigh
 }
 
 
-unsigned short countNeighbors(cell rects[], const int x, const int y) { // , cell &rects[][16]
+unsigned short countNeighbors(cell rects[], const int x, const int y) {
     unsigned short amount = 0;
-    //printf("start\n");
 
     for (short i = -1; i < 2; i++) {
         for (short j = -1; j < 2; j++) {
+            //if (i =! 0 && j != 0 && x+i >= 0 && x+i <= 16 && y+j >= 0 && y+j <= 16) {
             if (!(i == 0 && j == 0)) {
-                if (rects[ARRAY_D*(x+i) + (y+j)].alive) amount++;
+                //if (rects[ARRAY_D*(x+i) + (y+j)].alive && ((x+i) > -1) && (y+j) > -1) {
+                if (rects[ARRAY_D*(x+i) + (y+j)].alive == true) {
+                    printf("neighbor at: [%d, %d]\n", x+i, y+j);
+                    amount++;
+                }
             }
         }
     }
-    //printf("stop\n");
     return amount;
 }
 
@@ -59,28 +59,38 @@ int main(int argc, char* args[]) {
     }
 
     else {
-        window = SDL_CreateWindow("uhhh", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 656, 656, SDL_WINDOW_SHOWN);
+        window = SDL_CreateWindow("uhhh", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 655, 655, SDL_WINDOW_SHOWN);
         if (window == NULL) {
             printf("SDL_Error: %s\n", SDL_GetError());
         }
         else {
-            bool quit = false;
+            cell rects[ARRAY_D * ARRAY_D];
+
+            // init a glider (ship) shape
+            int m = 6, n = 7, o = 8;
+            rects[ARRAY_D*m + m].alive = true; // 66
+            rects[ARRAY_D*n + m].alive = true; // 76
+            rects[ARRAY_D*o + m].alive = true; // 86
+            rects[ARRAY_D*m + n].alive = true; // 67
+            rects[ARRAY_D*n + o].alive = true; // 78
+
+            /* testing amount of neighbors */
+            //printf("neighbors of [%d, %d] = %d\n", c, d, countNeighbors(rects, c, d));
+
+
+            // printing to the console the "binary" version of the map
+            for (size_t i = 0; i < ARRAY_D; i++) {
+                for (size_t j = 0; j < ARRAY_D; j++) {
+                    /* printing for debug purposes there's needed exchange 'j' for 'i'*/
+                    if (rects[ARRAY_D*j + i].alive) printf("1  ");
+                    else printf("0  ");
+                }
+                printf("\n");
+            }
 
             SDL_Event event;
             SDL_Renderer* renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED); //renderer used to color rects
-
-            cell rects[ARRAY_D * ARRAY_D];
-
-
-            /* testing amount of neighbors */
-            int c = 4, d = 5;
-            int e = 3, f = 6;
-            int g = 3, h = 5;
-            rects[ARRAY_D*c + d].alive = true;
-            rects[ARRAY_D*e + f].alive = true;
-            rects[ARRAY_D*g + h].alive = true;
-            printf("neighbors of [%d, %d] = %d\n", c, d, countNeighbors(rects, c, d));
-
+            bool quit = false;
 
             /* main loop */
             while (!quit) {
@@ -125,75 +135,35 @@ int main(int argc, char* args[]) {
                     //if (event.type == SDL_QUIT || event.key.keysym.sym == SDLK_ESCAPE) quit = true; // SDLK_ESCAPE bugged?
                     if (event.type == SDL_QUIT) quit = true;
 
-                    /* cell enlivening */
+                    /* cell enlivening by clicking */
                     else if (event.type == SDL_MOUSEBUTTONDOWN) {
                         int x, y;
                         SDL_GetMouseState(&x, &y);
-                        // informing
-                        printf("mouse position: [%3d, %3d] | rect coord: [%2d, %2d] | neighbors: %d\n", x, y, x/41, y/41, countNeighbors(rects, x/41, y/41));
                         rects[ARRAY_D * (x/41) + (y/41)].alive = !rects[ARRAY_D * (x/41) + (y/41)].alive;
-                        // unsigned short t =
+
+                        if (rects[ARRAY_D * (x/41) + (y/41)].alive)
+                            printf("mouse: [%3d, %3d] | rect: [%2d, %2d] | neighbors: %d\n", x, y, x/41, y/41, countNeighbors(rects, x/41, y/41));
+                        else
+                            printf("mouse: [%3d, %3d] | rect: [%2d, %2d]\n", x, y, x/41, y/41);
                     }
 
                     /* starting the LIFE! */
                     else if (event.type == SDL_KEYDOWN) {
-                        if (event.key.keysym.sym == SDLK_SPACE) {// to delete probably
-                            for (size_t i = 0; i < ARRAY_D; i++) {
+                        if (event.key.keysym.sym == SDLK_SPACE) {
+                            for (size_t i = 1; i < ARRAY_D - 1; i++) { // suspicious
                                 for (size_t j = 0; j < ARRAY_D; j++) {
-                                    switch(countNeighbors(rects, i, j)) {
-                                        case 1:
-                                        case 2: rects[ARRAY_D*i + j].alive = false; break;
-                                        case 3: rects[ARRAY_D*i + j].alive = true; break;
-                                        /*
-                                        case 4:
-                                        case 5:
-                                        case 6:
-                                        case 7:
-                                        case 8: rects[ARRAY_D*i + j].alive = false; break;
-                                        */
-                                        default: rects[ARRAY_D*i + j].alive = false; break;
-
-                                        /*
-                                        okay, now i know where the issue is;
-                                        when i initiated the one dimension array, there are
-                                        neighbors even on the other sides of window due to
-                                        the facts that this array is like a train:
-
-                                        0 0 0 1
-                                        1 0 0 0
-
-                                        1 from the first row and 1 from the second are neighbor
-                                        to each other, so we have supplied enough neighbor amount
-                                        to enliven the cell
-
-                                        one of the solution could be limitation of the columns
-                                        to prevent the cells' side-by-side counting
-                                        [don't know howdy yet]
-
-                                        another solution could be just deliver array as
-                                        a two-dimensional instead of one
-                                        it would be prevent problem showed above
-                                        but it calls to life other two or more problems
-                                        : passing two-dimensional array of objects to function
-                                        : slowing down the app
-                                        : issue of extension the map (in game of life there is assumption
-                                                                      the map is unlimited and like a sandbox)
-
-                                        don't know what to do...
-                                        */
-
-
-                                    } /* END OF switch */
-                                    //if (countNeighbors(rects, i, j) == 2 || countNeighbors(rects, i, j) == 3)
-                                      //  rects[ARRAY_D*i + j].alive = true;
-                                } /* END OF inside for loop */
-                            } /* END OF outside for loop */
-                        } /* END OF space pressed condition */
-                    } /* END OF key pressed down */
-                } /* END OF event loop */
-            } /* END OF main loop (while) */
-        } /* END OF else condition depends on existence of window */
-    } /* END OF condition that everything is initiated properly */
+                                    /* conversion from switch */
+                                    if (countNeighbors(rects, i, j) == 3) rects[ARRAY_D*i + j].alive = true;
+                                    else if ((countNeighbors(rects, i, j) == 2) && rects[ARRAY_D*i + j].alive == true) continue;
+                                    else rects[ARRAY_D*i + j].alive = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     SDL_DestroyWindow(window);
     SDL_Quit();
