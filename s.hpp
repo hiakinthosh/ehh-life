@@ -16,6 +16,8 @@ public:
 
 SDL_Rect createRect(const int xs, const int ys, const int width, const int height);
 unsigned short countNeighbors(cell rects[], const int x, const int y);
-
+void displayBoard(SDL_Renderer *renderer, cell rects[]);
+void highlightCell(SDL_Renderer *renderer, cell rects[]);
+void enliveningCell(SDL_Renderer *renderer, cell rects[]);
 
 #endif
