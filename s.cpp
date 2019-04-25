@@ -9,27 +9,18 @@ SDL_Rect createRect(const int xs, const int ys, const int width, const int heigh
     return rectangular;
 }
 
-
-unsigned short countNeighbors(cell rects[], const int x, const int y) {
+unsigned short countNeighbors(std::vector<Cell> &rects, const int x, const int y) {
     unsigned short amount = 0;
 
     for (short i = -1; i < 2; i++) {
-        for (short j = -1; j < 2; j++) {
-            //if (i =! 0 && j != 0 && x+i >= 0 && x+i <= 16 && y+j >= 0 && y+j <= 16) {
-            if (!(i == 0 && j == 0)) {
-                //if (rects[ARRAY_D*(x+i) + (y+j)].alive && ((x+i) > -1) && (y+j) > -1) {
-                if (rects[ARRAY_D*(x+i) + (y+j)].alive == true) {
-                    //printf("neighbor at: [%d, %d]\n", x+i, y+j); // turned of because of too much informations
-                    amount++;
-                }
-            }
-        }
+        for (short j = -1; j < 2; j++)
+            if (!(i == 0 && j == 0) && rects[ARRAY_D*(x+i) + (y+j)].alive)
+                amount++;
     }
     return amount;
 }
 
-
-void displayBoard(SDL_Renderer *renderer, cell rects[]) {
+void displayBoard(std::vector<Cell> &rects, SDL_Renderer *renderer) {
     for (size_t i = 0; i < ARRAY_D; i++) {
         for (size_t j = 0; j < ARRAY_D; j++) {
             SDL_SetRenderDrawColor(renderer, 255, 102, 0, 255); // orange
@@ -45,8 +36,18 @@ void displayBoard(SDL_Renderer *renderer, cell rects[]) {
     }
 }
 
-void highlightCell(SDL_Renderer *renderer, cell rects[]) {
-     /* hovered rectangular highlighting */
+void binaryDisplay(std::vector<Cell> &vec) {
+    for (size_t i = 0; i < ARRAY_D; i++) {
+        for (size_t j = 0; j < ARRAY_D; j++) {
+            if (vec[ARRAY_D*j + i].alive) printf("1  ");
+            else printf("0  ");
+        }
+        printf("\n");
+    }
+}
+
+void highlightCell(std::vector<Cell> &rects, SDL_Renderer *renderer) {
+     /* highlighting the hovered rectangular */
     int k, l;
     SDL_GetMouseState(&k, &l);
     if (rects[ARRAY_D * (k/41) + (l/41)].alive)
@@ -57,7 +58,7 @@ void highlightCell(SDL_Renderer *renderer, cell rects[]) {
     SDL_RenderPresent(renderer); // applying everything to the display
 }
 
-void enliveningCell(SDL_Renderer *renderer, cell rects[]) {
+void clickingCell(std::vector<Cell> &rects, SDL_Renderer *renderer) {
     int x, y;
     SDL_GetMouseState(&x, &y);
     rects[ARRAY_D * (x/41) + (y/41)].alive = !rects[ARRAY_D * (x/41) + (y/41)].alive;
@@ -66,4 +67,11 @@ void enliveningCell(SDL_Renderer *renderer, cell rects[]) {
         x/41, y/41,
         countNeighbors(rects, x/41, y/41),
         (rects[ARRAY_D * (x/41) + (y/41)].alive ? "alive" : "dead"));
+}
+
+std::vector<Cell> clearing(std::vector<Cell> &vec) {
+    for (unsigned i = 0; i < vec.size(); i++) {
+        vec.at(i).alive = false;
+    }
+    return vec;
 }

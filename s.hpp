@@ -3,21 +3,24 @@
 
 #include <SDL2/SDL.h>
 #include <stdio.h>
+//#include <algorithm>
+#include <vector>
 
 #define ARRAY_D 16
 
-class cell {
+class Cell {
 public:
     SDL_Rect core;
-    //cell() // I don't know how to use constructors and destructors :(  yet...
-    //SDL_Rect createRect(int xs, int ys, int width, int height);
     bool alive = false;
 };
 
+
 SDL_Rect createRect(const int xs, const int ys, const int width, const int height);
-unsigned short countNeighbors(cell rects[], const int x, const int y);
-void displayBoard(SDL_Renderer *renderer, cell rects[]);
-void highlightCell(SDL_Renderer *renderer, cell rects[]);
-void enliveningCell(SDL_Renderer *renderer, cell rects[]);
+unsigned short countNeighbors(std::vector<Cell> &rects, const int x, const int y);
+void displayBoard(std::vector<Cell> &rects, SDL_Renderer *renderer);
+void highlightCell(std::vector<Cell> &rects, SDL_Renderer *renderer);
+void clickingCell(std::vector<Cell> &rects, SDL_Renderer *renderer);
+std::vector<Cell> clearing(std::vector<Cell> &vec);
+void binaryDisplay(std::vector<Cell> &rects);
 
 #endif
