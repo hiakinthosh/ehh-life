@@ -91,13 +91,3 @@ std::vector<Cell> enlivening(std::vector<Cell> &source, std::vector<Cell> &tmpy)
     }
     return tmpy;
 }
-
-void binaryDisplay(std::vector<Cell> &vec) {
-    for (size_t i = 0; i < ARRAY_D; i++) {
-        for (size_t j = 0; j < ARRAY_D; j++) {
-            if (vec.at(ARRAY_D*j + i).alive) printf("1  ");
-            else printf("0  ");
-        }
-        printf("\n");
-    }
-}
