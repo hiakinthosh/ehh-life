@@ -1,17 +1,17 @@
-# Directories
+# Source directory
 S_DIR=source
-B_DIR=build
 
-# Files
-S_FILES=$(S_DIR)/main.cpp
+# Files to compile
+S_FILES=$(S_DIR)/main.cpp $(S_DIR)/s.cpp
 
 # Output
-EXEC=$(B_DIR)/sup
+EXEC=out
 
 # Build settings
 CC=g++
+
 # SDL options
-CC_SDL=-lSDL `sdl-config --cflags --libs`
+CC_SDL=-lSDL2 `sdl-config --cflags --libs`
 
 
 all:Build
